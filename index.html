@@ -144,8 +144,12 @@
                 for (const [time, participants] of Object.entries(times)) {
                     const timeSlot = document.createElement('div');
                     timeSlot.className = 'time-slot';
+
+                    // Lasketaan jäljellä olevat paikat
+                    const availableSpots = maxParticipants - participants;
+
                     timeSlot.innerHTML = `
-                        ${time} - Paikkoja jäljellä: ${maxParticipants - participants}
+                        ${time} - Paikkoja jäljellä: ${availableSpots}
                         <button class="${participants >= maxParticipants ? 'disabled' : ''}" ${participants >= maxParticipants ? 'disabled' : ''} onclick="reserveSlot('${date}', '${time}')">
                             ${participants >= maxParticipants ? 'Täynnä' : 'Ilmoittaudu'}
                         </button>
