@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ilmoittautuminen ruotsin kokeeseen</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .container {
+            width: 70%;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .time-slot {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .time-slot button {
+            padding: 5px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .time-slot button.disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Ilmoittautuminen ruotsin kokeeseen</h1>
+        <p>Valitse sinulle sopiva aika ja kirjoita nimesi sekä suoritettavan opintojakson tunnus (esim. RUB11) alle</p>
+
+        <div class="form-group">
+            <label for="name">Nimi</label>
+            <input type="text" id="name" placeholder="Anna nimesi">
+        </div>
+
+        <div class="form-group">
+            <label for="course">Opintojakson tunnus</label>
+            <input type="text" id="course" placeholder="Esim. RUB11">
+        </div>
+
+        <h3>Vapaat ajat</h3>
+        <div id="calendar"></div>
+    </div>
+
+    <script>
+        // Määritellään maksimiosallistujat
+        const maxParticipants = 4;
+
+        // Funktio, joka tarkistaa, onko annettu päivä maanantai tai torstai
+        function isMondayOrThursday(date) {
+            const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+            return dayOfWeek === 1 || dayOfWeek === 4; // Maanantai = 1, Torstai = 4
+        }
+
+        // Generoidaan vapaat ajat maanantaille ja torstaille vuoden 2025 loppuun asti
+        function generateSlots() {
+            const availableSlots = {};
+            const startDate = new Date('2025-01-01');
+            const endDate = new Date('2025-12-31');
+
+            let currentDate = startDate;
+
+            // Käydään läpi kaikki päivät vuodesta 2025
+            while (currentDate <= endDate) {
+                if (isMondayOrThursday(currentDate)) {
+                    const dateString = currentDate.toISOString().split('T')[0]; // Muutetaan päivämäärä formaattiin YYYY-MM-DD
+
+                    // Lisätään vapaat ajat maanantaille ja torstaille
+                    if (!availableSlots[dateString]) {
+                        availableSlots[dateString] = {};
+                    }
+
+                    if (currentDate.getDay() === 1) { // Maanantai
+                        availableSlots[dateString]["09:00"] = 0;
+                        availableSlots[dateString]["15:00"] = 0;
+                    } else if (currentDate.getDay() === 4) { // Torstai
+                        availableSlots[dateString]["08:00"] = 0;
+                        availableSlots[dateString]["14:00"] = 0;
+                    }
+                }
+
+                // Siirretään nykyinen päivämäärä seuraavaan päivään
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+
+            return availableSlots;
+        }
+
+        const availableSlots = generateSlots();
+
+        // Funktio, joka piirtää kalenterin
+        function renderCalendar() {
+            const calendar = document.getElementById('calendar');
+            calendar.innerHTML = ''; // Tyhjennetään vanhat ajat
+
+            // Käydään läpi kaikki saatavilla olevat ajat
+            for (const [date, times] of Object.entries(availableSlots)) {
+                const dateElement = document.createElement('div');
+                dateElement.innerHTML = `<strong>${date}</strong>`;
+                calendar.appendChild(dateElement);
+
+                for (const [time, participants] of Object.entries(times)) {
+                    const timeSlot = document.createElement('div');
+                    timeSlot.className = 'time-slot';
+                    timeSlot.innerHTML = `
+                        ${time} - Paikkoja jäljellä: ${maxParticipants - participants}
+                        <button class="${participants >= maxParticipants ? 'disabled' : ''}" ${participants >= maxParticipants ? 'disabled' : ''} onclick="reserveSlot('${date}', '${time}')">
+                            ${participants >= maxParticipants ? 'Täynnä' : 'Ilmoittaudu'}
+                        </button>
+                    `;
+                    dateElement.appendChild(timeSlot);
+                }
+            }
+        }
+
+        // Funktio, joka käsittelee ilmoittautumisen
+        function reserveSlot(date, time) {
+            const name = document.getElementById('name').value;
+            const course = document.getElementById('course').value;
+
+            if (!name || !course) {
+                alert('Täytä kaikki kentät!');
+                return;
+            }
+
+            if (availableSlots[date][time] < maxParticipants) {
+                availableSlots[date][time]++;
+                alert(`Ilmoittautuminen onnistui! Olet ilmoittautunut aikaan ${time} päivälle ${date}.`);
+                renderCalendar();
+            } else {
+                alert('Tämä aika on jo täynnä.');
+            }
+        }
+
+        // Piirretään kalenteri aluksi
+        renderCalendar();
+    </script>
+
+</body>
+</html>
