@@ -1,198 +1,184 @@
 <!DOCTYPE html>
 <html lang="fi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ilmoittautuminen ruotsin kokeeseen</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ilmoittautuminen ruotsin kokeeseen</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
 
-        h1 {
-            text-align: center;
-        }
+    h1 {
+      text-align: center;
+    }
 
-        .container {
-            width: 70%;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-        }
+    .container {
+      width: 70%;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
 
-        .time-slot {
-            margin: 10px 0;
-            padding: 10px;
-            background-color: #f0f0f0;
-            border-radius: 4px;
-            display: flex;
-            justify-content: space-between;
-        }
+    .time-slot {
+      margin: 10px 0;
+      padding: 10px;
+      background-color: #f0f0f0;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
 
-        .time-slot button {
-            padding: 5px 15px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
+    .time-slot button {
+      padding: 5px 15px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
 
-        .time-slot button.disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
+    .time-slot button.disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
 
-        .form-group {
-            margin-bottom: 15px;
-        }
+    .form-group {
+      margin-bottom: 15px;
+    }
 
-        .form-group label {
-            display: block;
-        }
+    .form-group label {
+      display: block;
+    }
 
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-        }
-    </style>
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+  </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Ilmoittautuminen ruotsin kokeeseen</h1>
-        <p>Valitse sinulle sopiva aika ja kirjoita nimesi sekä suoritettavan opintojakson tunnus (esim. RUB11) alle</p>
+  <div class="container">
+    <h1>Ilmoittautuminen ruotsin kokeeseen</h1>
+    <p>Valitse sinulle sopiva aika ja kirjoita nimesi sekä suoritettavan opintojakson tunnus (esim. RUB11) alle</p>
 
-        <div class="form-group">
-            <label for="name">Nimi</label>
-            <input type="text" id="name" placeholder="Anna nimesi">
-        </div>
-
-        <div class="form-group">
-            <label for="course">Opintojakson tunnus</label>
-            <input type="text" id="course" placeholder="Esim. RUB11">
-        </div>
-
-        <h3>Vapaat ajat</h3>
-        <div id="calendar"></div>
+    <div class="form-group">
+      <label for="name">Nimi</label>
+      <input type="text" id="name" placeholder="Anna nimesi">
     </div>
 
-    <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbxZRHHM_50nLxFeIaKQolvHeivUdReTjg4DzX7DDBIFe1Nre4mWHRxxNxqY2kwaQN6Rgg/exec';
-        const maxParticipants = 4;
+    <div class="form-group">
+      <label for="course">Opintojakson tunnus</label>
+      <input type="text" id="course" placeholder="Esim. RUB11">
+    </div>
 
-        function isMondayOrThursday(date) {
-            const dayOfWeek = date.getDay();
-            return dayOfWeek === 1 || dayOfWeek === 4;
-        }
+    <h3>Vapaat ajat</h3>
+    <div id="calendar"></div>
+  </div>
 
-        function generateSlots() {
-            const availableSlots = {};
-            const startDate = new Date('2025-01-01');
-            const endDate = new Date('2025-12-31');
-            let currentDate = startDate;
+  <script>
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyGwZ__e2S_kouIqvhOyBjjUHBJ9gVGXjAfHvkxBs8k5WzHBwCn2LzXQmRrccjMrN03Mw/exec';
+    const maxParticipants = 4;
 
-            while (currentDate <= endDate) {
-                if (isMondayOrThursday(currentDate)) {
-                    const dateString = currentDate.toISOString().split('T')[0];
-                    if (!availableSlots[dateString]) {
-                        availableSlots[dateString] = {};
-                    }
+    const availableSlots = {};
+    const startDate = new Date();
+    const endDate = new Date('2025-12-31');
 
-                    if (currentDate.getDay() === 1) {
-                        availableSlots[dateString]["09:00"] = 0;
-                        availableSlots[dateString]["15:00"] = 0;
-                    } else if (currentDate.getDay() === 4) {
-                        availableSlots[dateString]["08:00"] = 0;
-                        availableSlots[dateString]["14:00"] = 0;
-                    }
-                }
-                currentDate.setDate(currentDate.getDate() + 1);
+    while (startDate <= endDate) {
+      const day = startDate.getDay();
+      const yyyy = startDate.getFullYear();
+      const mm = String(startDate.getMonth() + 1).padStart(2, '0');
+      const dd = String(startDate.getDate()).padStart(2, '0');
+      const dateStr = `${yyyy}-${mm}-${dd}`;
+
+      if (day === 1) {
+        availableSlots[dateStr] = { "09:00": 0, "15:00": 0 };
+      } else if (day === 4) {
+        availableSlots[dateStr] = { "08:00": 0, "14:00": 0 };
+      }
+
+      startDate.setDate(startDate.getDate() + 1);
+    }
+
+    function renderCalendar() {
+      fetch(SCRIPT_URL)
+        .then(response => response.json())
+        .then(reservations => {
+          for (const key in reservations) {
+            const [date, time] = key.split('_');
+            if (availableSlots[date] && availableSlots[date][time] !== undefined) {
+              availableSlots[date][time] = reservations[key];
             }
-            return availableSlots;
-        }
+          }
 
-        const availableSlots = generateSlots();
+          const calendar = document.getElementById('calendar');
+          calendar.innerHTML = '';
 
-        function renderCalendar() {
-            const calendar = document.getElementById('calendar');
-            calendar.innerHTML = '';
+          for (const [date, times] of Object.entries(availableSlots)) {
+            const dateElement = document.createElement('div');
+            dateElement.innerHTML = `<strong>${date}</strong>`;
+            calendar.appendChild(dateElement);
 
-            for (const [date, times] of Object.entries(availableSlots)) {
-                const dateElement = document.createElement('div');
-                dateElement.innerHTML = `<strong>${date}</strong>`;
-                calendar.appendChild(dateElement);
-
-                for (const [time, participants] of Object.entries(times)) {
-                    const timeSlot = document.createElement('div');
-                    timeSlot.className = 'time-slot';
-
-                    const availableSpots = maxParticipants - participants;
-
-                    timeSlot.innerHTML = `
-                        ${time} - Paikkoja jäljellä: ${availableSpots}
-                        <button class="${participants >= maxParticipants ? 'disabled' : ''}" ${participants >= maxParticipants ? 'disabled' : ''} onclick="reserveSlot('${date}', '${time}')">
-                            ${participants >= maxParticipants ? 'Täynnä' : 'Ilmoittaudu'}
-                        </button>
-                    `;
-                    dateElement.appendChild(timeSlot);
-                }
+            for (const [time, participants] of Object.entries(times)) {
+              const remaining = maxParticipants - participants;
+              const timeSlot = document.createElement('div');
+              timeSlot.className = 'time-slot';
+              timeSlot.innerHTML = `
+                ${time} - Paikkoja jäljellä: ${remaining}
+                <button class="${remaining === 0 ? 'disabled' : ''}" ${remaining === 0 ? 'disabled' : ''} onclick="reserveSlot('${date}', '${time}')">
+                  ${remaining === 0 ? 'Täynnä' : 'Ilmoittaudu'}
+                </button>
+              `;
+              dateElement.appendChild(timeSlot);
             }
-        }
+          }
+        })
+        .catch(() => {
+          alert('Varaustietojen haku epäonnistui.');
+        });
+    }
 
-        async function reserveSlot(date, time) {
-            const name = document.getElementById('name').value;
-            const course = document.getElementById('course').value;
+    function reserveSlot(date, time) {
+      const name = document.getElementById('name').value.trim();
+      const course = document.getElementById('course').value.trim();
 
-            if (!name || !course) {
-                alert('Täytä kaikki kentät!');
-                return;
-            }
+      if (!name || !course) {
+        alert('Täytä kaikki kentät!');
+        return;
+      }
 
-            if (availableSlots[date][time] < maxParticipants) {
-                availableSlots[date][time]++;
+      const payload = { name, course, date, time };
 
-                const formData = {
-                    name,
-                    course,
-                    date,
-                    time
-                };
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: { 'Content-Type': 'application/json' }
+      })
+        .then(response => response.json())
+        .then(result => {
+          if (result.status === 'OK') {
+            alert(`Ilmoittautuminen onnistui! Olet ilmoittautunut aikaan ${time} päivälle ${date}.`);
+            renderCalendar();
+          } else {
+            alert('Virhe tallennuksessa.');
+          }
+        })
+        .catch(() => {
+          alert('Yhteys epäonnistui. Tarkista internet tai Web App URL.');
+        });
+    }
 
-                try {
-                    const response = await fetch(scriptURL, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(formData)
-                    });
-
-                    const result = await response.json();
-
-                    if (result.result === "success") {
-                        alert(`Ilmoittautuminen onnistui! Olet ilmoittautunut aikaan ${time} päivälle ${date}.`);
-                        renderCalendar();
-                    } else {
-                        alert("Virhe tallennettaessa tietoja: " + result.message);
-                    }
-                } catch (error) {
-                    alert("Tietojen lähetys epäonnistui: " + error);
-                }
-            } else {
-                alert('Tämä aika on jo täynnä.');
-            }
-        }
-
-        renderCalendar();
-    </script>
+    renderCalendar();
+  </script>
 
 </body>
 </html>
+
